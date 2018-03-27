@@ -149,7 +149,6 @@ class environment(object):
                 reward -= 1
             else:
                 reward -= 100
-
         obsv_ = self.obsv(n)
         return obsv_, reward, done, base_action
 
@@ -169,6 +168,7 @@ class env_ui(tk.Tk, environment):
         super(env_ui, self)._build_field()
         self.canvas = tk.Canvas(self, bg = 'white', height = self._height * self._unit, width = self._width * self._unit)
         
+        '''
         # create the grid
         for c in range(0, self._width * self._unit, self._unit):
             x0, y0, x1, y1 = c, 0, c, self._height * self._unit
@@ -176,6 +176,7 @@ class env_ui(tk.Tk, environment):
         for r in range(0, self._height * self._unit, self._unit):
             x0, y0, x1, y1 = 0, r, self._width * self._unit, r
             self.canvas.create_line(x0, y0, x1, y1)
+        '''
 
         # create targets
         for loc in self._targets:

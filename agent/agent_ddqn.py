@@ -10,7 +10,7 @@ from keras import regularizers
 import pickle
 
 BATCH_SIZE = 32
-EPISODES = 250000
+EPISODES = 2500000
 EPISODE_LENGTH = 500
 
 class DQNAgent:
@@ -21,7 +21,7 @@ class DQNAgent:
         self.n_actions = n_actions
         self.n_state_width = n_state_width
         self.n_state_height = n_state_height
-        self.learning_rate = 0.0003
+        self.learning_rate = 0.0001
 
         # Discount factor
         self.gamma = 0.9
@@ -29,9 +29,8 @@ class DQNAgent:
         # Exploration rate and decay
         self.epsilon = epsilon
         self.epsilon_decay = 0.9999
-        self.epsilon_min = 0.2
+        self.epsilon_min = 0.03
         self.train = train
-        #self.model = self.create_model()
         self.model = self.create_resnet()
         self.target_model = self.create_resnet()
 
@@ -55,9 +54,15 @@ class DQNAgent:
         x = Dense(self.n_actions, activation='linear')(x)
 
         model = Model(inputs=inputs, outputs=x)
+        
+        '''
+        for layer in model.layers[:-2]:
+            layer.trainable = False
+        '''
+
         model.summary()
         model.compile(loss='mse',
-                      optimizer=Adam(lr=self.learning_rate))
+                      optimizer=Adam(lr=self.learning_rate, decay = 1e-6))
 
         return model
 

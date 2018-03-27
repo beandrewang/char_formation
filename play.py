@@ -11,6 +11,15 @@ import matplotlib.pyplot as plt
 from collections import deque
 import os.path
 
+fds_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', \
+			'h', 'i', 'j', 'k', 'l', 'm', 'n', \
+			'o', 'p', 'q', 'r', 's', 't', 'u', \
+			'v', 'w', 'x', 'y', 'z', \
+			'A', 'B', 'C', 'D', 'E', 'F', 'G', \
+			'H', 'I', 'J', 'K', 'L', 'M', 'N', \
+			'O', 'P', 'Q', 'R', 'S', 'T', 'U', \
+			'V', 'W', 'X', 'Y', 'Z', \
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 fds_origin_loc = []
 
 def load_character(character_path):
@@ -31,7 +40,7 @@ def load_character(character_path):
 							loc.append(environment.Loc(x = b + 1, y = n))
 				fds_origin_loc.append([loc, 9, len(content) - 3])
 
-def main():
+def main(char, delay):
 
 	enable_plot = True
 
@@ -48,7 +57,11 @@ def main():
 	load_character(character_path)
 
 	R = 0
-	char_index = 0
+	print fds_list
+	if char == None:
+		char_index = 0
+	else:
+		char_index = fds_list.index(char)
 	field = None
 	episode = 0
 	targets_loc, width, height = fds_origin_loc[char_index % len(fds_origin_loc)]
@@ -57,7 +70,7 @@ def main():
 		field = environment(width, height, targets_loc)
 		# Initialize DQN agent
 		n_actions = field.n_actions
-		agent = DQNAgent(width, height, n_actions, epsilon = 0.2)
+		agent = DQNAgent(width, height, n_actions, epsilon = 0.01)
 		modelpath = 'models/char.h5'
 		import os.path
 		if os.path.exists(modelpath):
@@ -70,9 +83,11 @@ def main():
 
 	while episode < EPISODES:
 		#for char in fds_origin_loc:
+
 		step = 0
 		while step < EPISODE_LENGTH:
 			step += 1
+			time.sleep(delay / 1000.0)
 			for n in range(n_freedom):
 				if terminated[n]:
 					continue
@@ -92,7 +107,7 @@ def main():
 				terminated = [False] * n_freedom
 				break
 		episode += 1
-		print "episode: ", episode, "/", EPISODES, " steps: ", step, "rewards", R / nFDs, "e: ", agent.epsilon	
+		print "episode: ", episode, "/", EPISODES, " steps: ", step, "rewards", R / nFDs, "e: ", agent.epsilon, fds_list[char_index % len(fds_origin_loc)]
 
 		if enable_plot:
 			episodes.append(episode)
@@ -112,23 +127,26 @@ def main():
 		        ax.clear()
 
 		if True not in terminated:
-			time.sleep(1)
 			R = 0
-			char_index += 1
-			targets_loc, width, height = fds_origin_loc[char_index % len(fds_origin_loc)]
-			field.update_env(targets_loc)
-			n_freedom = field.n_freedom
+			if char == None:
+				char_index += 1
+				targets_loc, width, height = fds_origin_loc[char_index % len(fds_origin_loc)]
+				field.update_env(targets_loc)
+				n_freedom = field.n_freedom
 
-			terminated = [False] * n_freedom
-			need_reset = [True] * n_freedom
+				terminated = [False] * n_freedom
+				need_reset = [True] * n_freedom
+
+				time.sleep(delay / 300)
 
 
 if __name__ == "__main__":
-	'''
+	
 	from argparse import ArgumentParser
 	parser = ArgumentParser(description='character')
-	parser.add_argument('char', help = 'which character')
-
+	parser.add_argument('delay', nargs = '?', default = 0, type = int, help = 'step delay ms')
+	parser.add_argument('char', nargs = '?', default = None, help = 'which character')
+	
 	args = parser.parse_args()
-	'''
-	main()					
+	
+	main(args.char, args.delay)					

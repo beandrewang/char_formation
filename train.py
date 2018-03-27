@@ -10,6 +10,16 @@ import matplotlib.pyplot as plt
 from collections import deque
 import os.path
 
+fds_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', \
+			'h', 'i', 'j', 'k', 'l', 'm', 'n', \
+			'o', 'p', 'q', 'r', 's', 't', 'u', \
+			'v', 'w', 'x', 'y', 'z', \
+			'A', 'B', 'C', 'D', 'E', 'F', 'G', \
+			'H', 'I', 'J', 'K', 'L', 'M', 'N', \
+			'O', 'P', 'Q', 'R', 'S', 'T', 'U', \
+			'V', 'W', 'X', 'Y', 'Z', \
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
 fds_origin_loc = []
 
 def load_character(character_path):
@@ -30,8 +40,7 @@ def load_character(character_path):
 							loc.append(environment.Loc(x = b + 1, y = n))
 				fds_origin_loc.append([loc, 9, len(content) - 3])
 
-def main():
-
+def main(char):
 	enable_plot = False
 
 	if enable_plot:
@@ -41,13 +50,15 @@ def main():
 	    steps = deque(maxlen=200)
 	    episodes = deque(maxlen=200)
 	    rewards = deque(maxlen=200)
-	    loss = deque(maxlen=200)
 
 	character_path = 'samples/char.TXT'
 	load_character(character_path)
 
 	R = 0
-	char_index = 0
+	if char == None:
+		char_index = 0
+	else:
+		char_index = fds_list.index(char)
 	field = None
 	episode = 0
 	targets_loc, width, height = fds_origin_loc[char_index % len(fds_origin_loc)]
@@ -92,7 +103,7 @@ def main():
 				terminated = [False] * n_freedom
 				break
 		episode += 1
-		print "episode: ", episode, "/", EPISODES, " steps: ", step, "rewards", R / nFDs, "e: ", agent.epsilon	
+		print "episode: ", episode, "/", EPISODES, " steps: ", step, "rewards", R / nFDs, "e: ", agent.epsilon, fds_list[char_index % len(fds_origin_loc)]
 		if len(agent.memory) >= BATCH_SIZE:
 			l = agent.experience_replay(BATCH_SIZE)
 
@@ -100,10 +111,8 @@ def main():
 			episodes.append(episode)
 			steps.append(step)
 			rewards.append(R / nFDs)
-			#loss.append(l)
 			plt.plot(episodes, steps, 'r')
 			plt.plot(episodes, rewards, 'b')
-			#plt.plot(episodes, loss, 'black')
 			plt.xlim([int(episode / 100) * 100, int(episode / 100) * 100 + 100])
 			plt.xlabel("Episodes")
 			plt.legend(('Steps per episode', 'Rewards per episode'))
@@ -112,28 +121,27 @@ def main():
 		if episode % 100 == 0:
 		    if enable_plot:
 		        ax.clear()
-		    #if len(agent.memory) >= BATCH_SIZE:
-		        #print "cost:", agent.evaluate(BATCH_SIZE)
 		    agent.save(modelpath)
 
 		if True not in terminated:
-			#print "233333333333333333"
 			R = 0
-			char_index += 1
-			targets_loc, width, height = fds_origin_loc[char_index % len(fds_origin_loc)]
-			field.update_env(targets_loc)
-			n_freedom = field.n_freedom
 
-			terminated = [False] * n_freedom
-			need_reset = [True] * n_freedom
+			if char == None:
+				char_index += 1
+				targets_loc, width, height = fds_origin_loc[char_index % len(fds_origin_loc)]
+				field.update_env(targets_loc)
+				n_freedom = field.n_freedom
+
+				terminated = [False] * n_freedom
+				need_reset = [True] * n_freedom
 
 
 if __name__ == "__main__":
-	'''
+	
 	from argparse import ArgumentParser
 	parser = ArgumentParser(description='character')
-	parser.add_argument('char', help = 'which character')
+	parser.add_argument('char', nargs = '?', default = None, help = 'which character')
 
 	args = parser.parse_args()
-	'''
-	main()					
+	
+	main(args.char)					
